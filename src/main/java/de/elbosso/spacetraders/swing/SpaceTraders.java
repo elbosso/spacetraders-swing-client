@@ -41,11 +41,7 @@ public class SpaceTraders extends javax.swing.JFrame
         super("SwingSpaceTraders");
         defaultClient.setBasePath("https://api.spacetraders.io/v2");
         HttpBearerAuth AgentToken = (HttpBearerAuth) defaultClient.getAuthentication("AgentToken");
-        AgentToken.setBearerToken("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWVyIjoiTEFfQk9TU0EiLCJ2ZXJzaW9uIjoidjIiLCJyZXNldF9kYXRlIjoiMjA"+
-"yMy0wNi0wMyIsImlhdCI6MTY4NTkwNDUzNywic3ViIjoiYWdlbnQtdG9rZW4ifQ.KrXwDaxD42hGyTUrxcIl0qmq3SxZ5cfMuQgFvmOQKyc9R9ehtkBHZq-uFHGjoSmG4sHCLZ"+
-"yzCzgjipteSFlF1K4m7zC1TDfPWF6yVJPTKynWtxxwSKoX7M2I9Oy2vxTmbCuPDnrfBIG39mvxwn7B4OVWRlTj5zfnc934mEdjuqNcdNAW0NLnn4kmNrABZAyoVf-pujtkXnH4"+
-"PqZB5KE0sO432fl0wN97xCAmiXvUcJkfiupGzFd5NKjjcZ1ro78YNJebI8B3rMtuitzuAQI9VcI9RhNy3dHZo1UXzCULiL0cjXFqLCzauJhWkFD3sRwf1Gd9ODnvqlUdosX2OU"+
-"TjOA");
+        AgentToken.setBearerToken();
         agentsApi = new AgentsApi(defaultClient);
         GetMyAgent200Response result = agentsApi.getMyAgent();
         CLASS_LOGGER.debug("GetMyAgent200Response {}",result);
