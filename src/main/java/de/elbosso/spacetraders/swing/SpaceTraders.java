@@ -18,6 +18,8 @@ import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.IntrospectionException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class SpaceTraders extends javax.swing.JFrame
 {
@@ -36,12 +38,17 @@ public class SpaceTraders extends javax.swing.JFrame
     private javax.swing.JFrame contractsWindow;
     private de.netsysit.util.beans.InterfaceFactory interfaceFactory=new de.netsysit.util.beans.InterfaceFactory();
 
-    SpaceTraders() throws ApiException, InterfaceFactoryException
+    SpaceTraders() throws ApiException, InterfaceFactoryException, IOException
     {
         super("SwingSpaceTraders");
         defaultClient.setBasePath("https://api.spacetraders.io/v2");
         HttpBearerAuth AgentToken = (HttpBearerAuth) defaultClient.getAuthentication("AgentToken");
-        AgentToken.setBearerToken();
+        java.io.File userHome=new java.io.File(java.lang.System.getProperty("user.home"));
+        java.io.File authTokenFile=new java.io.File(userHome,"SpaceTraderToken.txt");
+        java.io.FileInputStream fis=new java.io.FileInputStream(authTokenFile);
+        java.lang.String tokenValue=de.elbosso.util.io.Utilities.readIntoString(fis);
+        fis.close();
+        AgentToken.setBearerToken(tokenValue);
         agentsApi = new AgentsApi(defaultClient);
         GetMyAgent200Response result = agentsApi.getMyAgent();
         CLASS_LOGGER.debug("GetMyAgent200Response {}",result);
@@ -355,7 +362,7 @@ public class SpaceTraders extends javax.swing.JFrame
             showDetailAction.setEnabled(table.getSelectedRowCount()>0);
         }
     }
-    public static void main(String[] args) throws InterfaceFactoryException, ApiException
+    public static void main(String[] args) throws InterfaceFactoryException, ApiException, IOException
     {
         new SpaceTraders();
     }
@@ -366,11 +373,7 @@ public class SpaceTraders extends javax.swing.JFrame
 
 // Configure HTTP bearer authorization: AgentToken
         HttpBearerAuth AgentToken = (HttpBearerAuth) defaultClient.getAuthentication("AgentToken");
-        AgentToken.setBearerToken("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWVyIjoiTEFfQk9TU0EiLCJ2ZXJzaW9uIjoidjIiLCJyZXNldF9kYXRlIjoiMjA"+
-"yMy0wNi0wMyIsImlhdCI6MTY4NTkwNDUzNywic3ViIjoiYWdlbnQtdG9rZW4ifQ.KrXwDaxD42hGyTUrxcIl0qmq3SxZ5cfMuQgFvmOQKyc9R9ehtkBHZq-uFHGjoSmG4sHCLZ"+
-"yzCzgjipteSFlF1K4m7zC1TDfPWF6yVJPTKynWtxxwSKoX7M2I9Oy2vxTmbCuPDnrfBIG39mvxwn7B4OVWRlTj5zfnc934mEdjuqNcdNAW0NLnn4kmNrABZAyoVf-pujtkXnH4"+
-"PqZB5KE0sO432fl0wN97xCAmiXvUcJkfiupGzFd5NKjjcZ1ro78YNJebI8B3rMtuitzuAQI9VcI9RhNy3dHZo1UXzCULiL0cjXFqLCzauJhWkFD3sRwf1Gd9ODnvqlUdosX2OU"+
-"TjOA");
+        AgentToken.setBearerToken("");
 
         AgentsApi apiInstance = new AgentsApi(defaultClient);
         de.elbosso.spacetraders.client.api.SystemsApi systemsApi=new SystemsApi(defaultClient);
