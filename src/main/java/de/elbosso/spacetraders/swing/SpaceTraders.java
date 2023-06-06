@@ -1,4 +1,4 @@
-package de.elbosso.spacetraders;
+package de.elbosso.spacetraders.swing;
 
 import de.elbosso.spacetraders.client.api.ContractsApi;
 import de.elbosso.spacetraders.client.api.FleetApi;
@@ -21,6 +21,8 @@ import java.beans.IntrospectionException;
 
 public class SpaceTraders extends javax.swing.JFrame
 {
+    private static final org.slf4j.Logger CLASS_LOGGER=org.slf4j.LoggerFactory.getLogger(SpaceTraders.class);
+    private static final org.slf4j.Logger EXCEPTION_LOGGER=org.slf4j.LoggerFactory.getLogger("ExceptionCatcher");
     private ApiClient defaultClient = Configuration.getDefaultApiClient();
     private AgentsApi agentsApi;
     private Agent agent;
@@ -46,7 +48,7 @@ public class SpaceTraders extends javax.swing.JFrame
 "TjOA");
         agentsApi = new AgentsApi(defaultClient);
         GetMyAgent200Response result = agentsApi.getMyAgent();
-        java.lang.System.out.println(result);
+        CLASS_LOGGER.debug("GetMyAgent200Response {}",result);
         agent=result.getData();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setContentPane(toplevel);
@@ -69,7 +71,7 @@ public class SpaceTraders extends javax.swing.JFrame
             {
                 java.lang.String sys=agent.getHeadquarters();
                 sys=sys.substring(0,sys.lastIndexOf("-"));
-                java.lang.System.out.println(sys);
+                CLASS_LOGGER.debug(sys);
                 if(homeWindow==null)
                 {
                     try
@@ -255,7 +257,7 @@ public class SpaceTraders extends javax.swing.JFrame
         private void update() throws ApiException, IntrospectionException
         {
             GetContracts200Response cr=contractsApi.getContracts(1,20);
-            java.lang.System.out.println(cr);
+            CLASS_LOGGER.debug("GetContracts200Response {}",cr);
             contracts=cr.getData();
             de.netsysit.model.table.BeanListModel<Contract> model=new BeanListModel(Contract.class,contracts);
             table.setModel(model);
@@ -323,7 +325,7 @@ public class SpaceTraders extends javax.swing.JFrame
         private void update() throws ApiException, IntrospectionException
         {
             GetSystemWaypoints200Response wr=systemsApi.getSystemWaypoints(systemId,1,20);
-            java.lang.System.out.println(wr);
+            CLASS_LOGGER.debug("GetSystemWaypoints200Response {}",wr);
             waypoints=wr.getData();
             de.netsysit.model.table.BeanListModel<Waypoint> model=new BeanListModel(Waypoint.class,waypoints);
             table.setModel(model);
@@ -381,20 +383,20 @@ public class SpaceTraders extends javax.swing.JFrame
         try
         {
             GetMyAgent200Response result = apiInstance.getMyAgent();
-            java.lang.System.out.println(result);
+            CLASS_LOGGER.debug("GetMyAgent200Response {}",result);
             Agent agent=result.getData();
 
             java.lang.String sys=agent.getHeadquarters();
             sys=sys.substring(0,sys.lastIndexOf("-"));
-            java.lang.System.out.println(sys);
+            CLASS_LOGGER.debug(sys);
             GetSystem200Response system=systemsApi.getSystem(sys);
-            java.lang.System.out.println(system);
+            CLASS_LOGGER.debug("GetSystem200Response {}",system);
 
             InterfaceFactory ifac=new InterfaceFactory();
 
 
             GetSystemWaypoints200Response wr=systemsApi.getSystemWaypoints(sys,1,20);
-            java.lang.System.out.println(wr);
+            CLASS_LOGGER.debug("GetSystemWaypoints200Response {}",wr);
             java.util.List<Waypoint> waypoints=wr.getData();
             for(Waypoint waypoint:waypoints)
             {
@@ -405,7 +407,7 @@ public class SpaceTraders extends javax.swing.JFrame
             }
 
             GetContracts200Response cr=contractsApi.getContracts(1,20);
-            java.lang.System.out.println(cr);
+            CLASS_LOGGER.debug("GetContracts200Response {}",cr);
             java.util.List<Contract> contracts=cr.getData();
             for(Contract contract:contracts)
             {
@@ -418,7 +420,7 @@ public class SpaceTraders extends javax.swing.JFrame
 
             GetMyShips200Response shipsr=fleetApi.getMyShips(1,20);
             java.util.List<Ship> ships=shipsr.getData();
-            java.lang.System.out.println(ships);
+            CLASS_LOGGER.debug("ships {}",ships);
             Ship miningDrone=null;
             for(Ship ship:ships)
             {
@@ -440,12 +442,12 @@ public class SpaceTraders extends javax.swing.JFrame
                     }
                     if(shipyardWaypointSymbol!=null)
                     {
-                        java.lang.System.out.println(shipyardWaypointSymbol);
+                        CLASS_LOGGER.debug(shipyardWaypointSymbol);
                         PurchaseShipRequest psr=new PurchaseShipRequest();
                         psr.shipType(ShipType.MINING_DRONE);
                         psr.waypointSymbol(shipyardWaypointSymbol);
                         PurchaseShip201Response psresp=fleetApi.purchaseShip(psr);
-                        java.lang.System.out.println(psresp);
+                        CLASS_LOGGER.debug("PurchaseShip201Response {}",psresp);
                         miningDrone=psresp.getData().getShip();
                         break;
                     }
@@ -462,7 +464,7 @@ public class SpaceTraders extends javax.swing.JFrame
             javax.swing.tree.TreeModel model=new javax.swing.tree.DefaultTreeModel(node);
             de.netsysit.ui.dialog.GeneralPurposeInfoDialog.showComponentInDialog(null,new javax.swing.JScrollPane(new javax.swing.JTree(model)));
             GetContracts200Response con=contractsApi.getContracts(1,20);
-            java.lang.System.out.println(con);
+            CLASS_LOGGER.debug(con);
             org.json.JSONObject contracts=new JSONObject(con.toJson());
             node=new JsonNode("json",contracts,null);
             model=new javax.swing.tree.DefaultTreeModel(node);
@@ -470,11 +472,11 @@ public class SpaceTraders extends javax.swing.JFrame
 */
         } catch (ApiException e)
         {
-            java.lang.System.err.println("Exception when calling AgentsApi#getMyAgent");
-            java.lang.System.err.println("Status code: " + e.getCode());
-            java.lang.System.err.println("Reason: " + e.getResponseBody());
-            java.lang.System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
+            EXCEPTION_LOGGER.error("Exception when calling AgentsApi#getMyAgent");
+            EXCEPTION_LOGGER.error("Status code: " + e.getCode());
+            EXCEPTION_LOGGER.error("Reason: " + e.getResponseBody());
+            EXCEPTION_LOGGER.error("Response headers: " + e.getResponseHeaders());
+            EXCEPTION_LOGGER.error(e.getMessage(),e);
         }
     }
 }
