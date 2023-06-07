@@ -9,7 +9,10 @@ import de.elbosso.spacetraders.client.invoker.Configuration;
 import de.elbosso.spacetraders.client.invoker.auth.*;
 import de.elbosso.spacetraders.client.model.*;
 import de.elbosso.spacetraders.client.api.AgentsApi;
+import de.elbosso.util.Stringifier;
+import de.elbosso.util.StringifierRegistry;
 import de.netsysit.model.table.BeanListModel;
+import de.netsysit.util.ResourceLoader;
 import de.netsysit.util.beans.InterfaceFactory;
 import de.netsysit.util.beans.InterfaceFactoryException;
 
@@ -135,6 +138,30 @@ public class SpaceTraders extends javax.swing.JFrame
 
     public static void main(String[] args) throws InterfaceFactoryException, ApiException, IOException
     {
+        try
+        {
+            java.util.Properties iconFallbacks = new java.util.Properties();
+            java.io.InputStream is=de.netsysit.util.ResourceLoader.getResource("de/elbosso/ressources/data/icon_trans_material.properties").openStream();
+            iconFallbacks.load(is);
+            is.close();
+
+//			iconFallbacks.put("toolbarButtonGraphics/general/SaveAs24.gif","eb/svg/design/bitmap/save_as_48.png");
+
+            de.netsysit.util.ResourceLoader.configure(iconFallbacks);
+            de.netsysit.util.ResourceLoader.setSize(ResourceLoader.IconSize.medium);
+        }
+        catch(java.io.IOException ioexp)
+        {
+            ioexp.printStackTrace();
+        }
+        StringifierRegistry.register(ShipRegistration.class, new Stringifier<ShipRegistration>()
+        {
+            @Override
+            public String toString(ShipRegistration shipRegistration)
+            {
+                return shipRegistration.getName()+" "+shipRegistration.getRole();
+            }
+        });
         new SpaceTraders();
     }
     public static void main1(String[] args) throws InterfaceFactoryException

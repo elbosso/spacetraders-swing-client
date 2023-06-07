@@ -5,10 +5,12 @@ import de.elbosso.spacetraders.client.invoker.ApiClient;
 import de.elbosso.spacetraders.client.invoker.ApiException;
 import de.elbosso.spacetraders.client.model.GetMyShips200Response;
 import de.elbosso.spacetraders.client.model.Ship;
+import de.elbosso.spacetraders.client.model.ShipRegistration;
 import de.netsysit.model.table.BeanListModel;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.IntrospectionException;
@@ -36,6 +38,23 @@ class FleetWindow extends javax.swing.JFrame implements javax.swing.event.ListSe
         toplevel.add(new javax.swing.JScrollPane(table));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getSelectionModel().addListSelectionListener(this);
+        table.setDefaultRenderer(ShipRegistration.class,new DefaultTableCellRenderer()
+        {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
+            {
+                java.awt.Component comp=super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if((comp!=null)&&(javax.swing.JLabel.class.isAssignableFrom(comp.getClass())))
+                {
+                    if(value!=null)
+                    {
+                        ShipRegistration shipRegistration=(ShipRegistration)value;
+                        ((javax.swing.JLabel) comp).setText(shipRegistration.getName()+" "+shipRegistration.getRole());
+                    }
+                }
+                return comp;
+            }
+        });
         createActions();
         JToolBar tb = new JToolBar();
         tb.setFloatable(false);
@@ -63,7 +82,7 @@ class FleetWindow extends javax.swing.JFrame implements javax.swing.event.ListSe
                 Ship ship = ships.get(table.getSelectedRow());
                 try
                 {
-                    de.netsysit.ui.dialog.GeneralPurposeInfoDialog.showComponentInDialog(FleetWindow.this, interfaceFactory.fetchInterfaceForBean(ship, ship.getRegistration().getName()));
+                    de.netsysit.ui.dialog.GeneralPurposeInfoDialog.showComponentInDialog(FleetWindow.this, new ShipPanel(defaultClient,ship));
                     update();
                 } catch (Throwable t)
                 {
