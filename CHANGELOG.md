@@ -3,6 +3,11 @@
 Changelog of this project.
 
 
+**now, ships can move between waypoints!**
+
+
+[669e2addd0bc5dc](https://github.com/<user>/<project>/commit/669e2addd0bc5dc) Juergen Key *2023-06-07 13:49:02*
+
 **started doing the first actions on ships**
 
 

@@ -31,6 +31,7 @@ public class ShipPanel extends javax.swing.JPanel
     private javax.swing.Action travelToNearestMarketPlaceAction;
     private javax.swing.Action travelToNearestAsteroidFieldAction;
     private javax.swing.Action refreshAction;
+    private javax.swing.Action sellAction;
 
     public ShipPanel(ApiClient defaultClient, Ship ship) throws InterfaceFactoryException, ApiException
     {
@@ -49,6 +50,7 @@ public class ShipPanel extends javax.swing.JPanel
         tb.add(orbitAction);
         tb.add(dockAction);
         tb.add(refuelAction);
+        tb.add(sellAction);
         tb.add(extractAction);
         tb.add(navigateAction);
         tb.add(travelToNearestMarketPlaceAction);
@@ -129,12 +131,7 @@ public class ShipPanel extends javax.swing.JPanel
     }
     public boolean isAsteroidField(Waypoint waypoint)
     {
-        boolean rv=false;
-        for(WaypointTrait trait:waypoint.getTraits())
-        {
-            rv=trait.getSymbol()== WaypointTrait.SymbolEnum.MARKETPLACE;
-            break;
-        }
+        boolean rv=waypoint.getType()==WaypointType.ASTEROID_FIELD;
         return rv;
     }
     private void update() throws InterfaceFactoryException, ApiException
@@ -161,7 +158,8 @@ public class ShipPanel extends javax.swing.JPanel
             orbitAction.setEnabled(true);
             dockAction.setEnabled(false);
             refuelAction.setEnabled(isMarketPlace(sr.getData()));
-            extractAction.setEnabled(false);
+            extractAction.setEnabled(isAsteroidField(sr.getData()));
+            sellAction.setEnabled(isMarketPlace(sr.getData()));
             navigateAction.setEnabled(false);
             travelToNearestMarketPlaceAction.setEnabled(false);
             travelToNearestAsteroidFieldAction.setEnabled(false);
@@ -172,6 +170,7 @@ public class ShipPanel extends javax.swing.JPanel
             dockAction.setEnabled(true);
             refuelAction.setEnabled(false);
             extractAction.setEnabled(isAsteroidField(sr.getData()));
+            sellAction.setEnabled(false);
             navigateAction.setEnabled(false);//for now! true);
             travelToNearestMarketPlaceAction.setEnabled(getNearestMarketPlace(system.getData(),sr.getData())!=null);
             travelToNearestAsteroidFieldAction.setEnabled(getNearestAsteroidField(system.getData(),sr.getData())!=null);
@@ -238,7 +237,8 @@ public class ShipPanel extends javax.swing.JPanel
             {
                 try
                 {
-
+                    ExtractResourcesRequest extractResourcesRequest=new ExtractResourcesRequest();
+                    fleetApi.extractResources(ship.getSymbol(),extractResourcesRequest);
                     update();
                 }
                 catch(java.lang.Throwable t)
@@ -255,7 +255,6 @@ public class ShipPanel extends javax.swing.JPanel
             {
                 try
                 {
-
                     update();
                 }
                 catch(java.lang.Throwable t)
@@ -316,6 +315,21 @@ public class ShipPanel extends javax.swing.JPanel
         };
         travelToNearestAsteroidFieldAction.setEnabled(false);
         refreshAction=new javax.swing.AbstractAction("refresh")
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                try
+                {
+                    update();
+                }
+                catch(java.lang.Throwable t)
+                {
+                    de.elbosso.util.Utilities.handleException(EXCEPTION_LOGGER,ShipPanel.this,t);
+                }
+            }
+        };
+        sellAction=new javax.swing.AbstractAction("sell")
         {
             @Override
             public void actionPerformed(ActionEvent e)
