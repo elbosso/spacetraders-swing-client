@@ -3,6 +3,11 @@
 Changelog of this project.
 
 
+**now, we go mining!**
+
+
+[47e3cfb034985f1](https://github.com/<user>/<project>/commit/47e3cfb034985f1) Juergen Key *2023-06-07 14:10:49*
+
 **now, ships can move between waypoints!**
 
 

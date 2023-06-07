@@ -125,7 +125,8 @@ public class ShipPanel extends javax.swing.JPanel
         for(WaypointTrait trait:waypoint.getTraits())
         {
             rv=trait.getSymbol()== WaypointTrait.SymbolEnum.MARKETPLACE;
-            break;
+            if(rv==true)
+                break;
         }
         return rv;
     }
@@ -171,7 +172,18 @@ public class ShipPanel extends javax.swing.JPanel
             refuelAction.setEnabled(false);
             extractAction.setEnabled(isAsteroidField(sr.getData()));
             sellAction.setEnabled(false);
-            navigateAction.setEnabled(false);//for now! true);
+            navigateAction.setEnabled(true);
+            travelToNearestMarketPlaceAction.setEnabled(getNearestMarketPlace(system.getData(),sr.getData())!=null);
+            travelToNearestAsteroidFieldAction.setEnabled(getNearestAsteroidField(system.getData(),sr.getData())!=null);
+        }
+        if(ship.getNav().getStatus()== ShipNavStatus.IN_TRANSIT)
+        {
+            orbitAction.setEnabled(false);
+            dockAction.setEnabled(false);
+            refuelAction.setEnabled(false);
+            extractAction.setEnabled(false);
+            sellAction.setEnabled(false);
+            navigateAction.setEnabled(true);
             travelToNearestMarketPlaceAction.setEnabled(getNearestMarketPlace(system.getData(),sr.getData())!=null);
             travelToNearestAsteroidFieldAction.setEnabled(getNearestAsteroidField(system.getData(),sr.getData())!=null);
         }
@@ -220,7 +232,7 @@ public class ShipPanel extends javax.swing.JPanel
             {
                 try
                 {
-
+                    fleetApi.refuelShip(ship.getSymbol());
                     update();
                 }
                 catch(java.lang.Throwable t)
@@ -240,6 +252,7 @@ public class ShipPanel extends javax.swing.JPanel
                     ExtractResourcesRequest extractResourcesRequest=new ExtractResourcesRequest();
                     fleetApi.extractResources(ship.getSymbol(),extractResourcesRequest);
                     update();
+                    
                 }
                 catch(java.lang.Throwable t)
                 {
@@ -255,7 +268,17 @@ public class ShipPanel extends javax.swing.JPanel
             {
                 try
                 {
-                    update();
+                    WaypointTraitPanel waypointTraitPanel=new WaypointTraitPanel(ship.getNav().getSystemSymbol(),defaultClient,null);
+                    de.netsysit.ui.dialog.GeneralPurposeOkCancelDialog gpocd=de.netsysit.ui.dialog.GeneralPurposeOkCancelDialog.create(ShipPanel.this,"Destinations");
+                    gpocd.showDialog(waypointTraitPanel);
+                    Waypoint destination=waypointTraitPanel.getSelectedWaypoint();
+                    if(destination!=null)
+                    {
+                        NavigateShipRequest navigateShipRequest=new NavigateShipRequest();
+                        navigateShipRequest.setWaypointSymbol(destination.getSymbol());
+                        fleetApi.navigateShip(ship.getSymbol(),navigateShipRequest);
+                        update();
+                    }
                 }
                 catch(java.lang.Throwable t)
                 {
@@ -336,6 +359,28 @@ public class ShipPanel extends javax.swing.JPanel
             {
                 try
                 {
+                    GetMarket200Response gmr=systemsApi.getMarket(ship.getNav().getSystemSymbol(),ship.getNav().getWaypointSymbol());
+                    Market market=gmr.getData();
+                    CLASS_LOGGER.debug("Import: {}",market.getImports());
+                    CLASS_LOGGER.debug("Trade: {}",market.getTradeGoods());
+                    java.util.Map<java.lang.String,MarketTradeGood> tradeItems=new java.util.HashMap();
+                    for(MarketTradeGood marketTradeGood:market.getTradeGoods())
+                    {
+                        tradeItems.put(marketTradeGood.getSymbol(),marketTradeGood);
+                    }
+                    int sumup=0;
+                    for(ShipCargoItem shipCargoItem:ship.getCargo().getInventory())
+                    {
+                        if(tradeItems.containsKey(shipCargoItem.getSymbol()))
+                        {
+                            SellCargoRequest sellCargoRequest = new SellCargoRequest();
+                            sellCargoRequest.setSymbol(shipCargoItem.getSymbol());
+                            sellCargoRequest.setUnits(shipCargoItem.getUnits());
+                            fleetApi.sellCargo(ship.getSymbol(),sellCargoRequest);
+                            sumup+=shipCargoItem.getUnits()*tradeItems.get(shipCargoItem.getSymbol()).getSellPrice();
+                        }
+                    }
+                    CLASS_LOGGER.debug("sold goods for a total of {} credits!",sumup);
                     update();
                 }
                 catch(java.lang.Throwable t)
