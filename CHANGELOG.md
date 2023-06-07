@@ -3,6 +3,11 @@
 Changelog of this project.
 
 
+**started doing the first actions on ships**
+
+
+[224a55dd729f318](https://github.com/<user>/<project>/commit/224a55dd729f318) Juergen Key *2023-06-07 11:15:10*
+
 **refactoring**
 
 

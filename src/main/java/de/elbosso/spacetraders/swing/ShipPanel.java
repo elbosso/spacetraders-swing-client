@@ -10,6 +10,7 @@ import de.netsysit.util.beans.InterfaceFactoryException;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.lang.System;
 
 public class ShipPanel extends javax.swing.JPanel
@@ -29,6 +30,7 @@ public class ShipPanel extends javax.swing.JPanel
     private javax.swing.Action navigateAction;
     private javax.swing.Action travelToNearestMarketPlaceAction;
     private javax.swing.Action travelToNearestAsteroidFieldAction;
+    private javax.swing.Action refreshAction;
 
     public ShipPanel(ApiClient defaultClient, Ship ship) throws InterfaceFactoryException, ApiException
     {
@@ -38,10 +40,12 @@ public class ShipPanel extends javax.swing.JPanel
         this.fleetApi = new FleetApi(defaultClient);
         this.systemsApi = new SystemsApi(defaultClient);
         tb = new javax.swing.JToolBar();
+        tb.setFloatable(false);
         add(tb, BorderLayout.NORTH);
         add(interfaceFactory.fetchInterfaceForBean(ship, ship.getRegistration().getName()));
         createActions();
         manageActionState();
+        tb.add(refreshAction);
         tb.add(orbitAction);
         tb.add(dockAction);
         tb.add(refuelAction);
@@ -51,25 +55,69 @@ public class ShipPanel extends javax.swing.JPanel
         tb.add(travelToNearestAsteroidFieldAction);
 //        tb.add();
     }
-/*    public boolean isMarketPlace(de.elbosso.spacetraders.client.model.System system) throws ApiException
+    public Waypoint getNearestMarketPlace(de.elbosso.spacetraders.client.model.System system, Waypoint location) throws ApiException
     {
-        boolean rv=false;
+        java.awt.geom.Point2D home=new Point2D.Double(location.getX(),location.getY());
+        double mindist= Double.MAX_VALUE;
+        Waypoint rv=null;
         GetSystemWaypoints200Response wr=systemsApi.getSystemWaypoints(system.getSymbol(),1,20);
         CLASS_LOGGER.debug("GetSystemWaypoints200Response {}",wr);
         java.util.List<Waypoint> waypoints=wr.getData();
+        Waypoint candidate=null;
         for(Waypoint waypoint:waypoints)
         {
-            for(WaypointTrait trait:waypoint.getTraits())
+            if(waypoint.getSymbol().equals(location.getSymbol())==false)
             {
-                if(rv==false)
-                    rv=trait.getSymbol()== WaypointTrait.SymbolEnum.MARKETPLACE;
+                for (WaypointTrait trait : waypoint.getTraits())
+                {
+                    if ((rv == null)&&(trait.getSymbol() == WaypointTrait.SymbolEnum.MARKETPLACE))
+                    {
+                        candidate = waypoint;
+                        break;
+                    }
+                }
+                if(candidate!=null)
+                {
+                    java.awt.geom.Point2D cp=new Point2D.Double(candidate.getX(),candidate.getY());
+                    if(cp.distanceSq(home)<mindist)
+                    {
+                        rv=candidate;
+                        mindist=cp.distanceSq(home);
+                    }
+                }
             }
-            if(rv==true)
-                break;
         }
         return rv;
     }
-*/    public boolean isMarketPlace(de.elbosso.spacetraders.client.model.Waypoint waypoint) throws ApiException
+    public Waypoint getNearestAsteroidField(de.elbosso.spacetraders.client.model.System system, Waypoint location) throws ApiException
+    {
+        java.awt.geom.Point2D home=new Point2D.Double(location.getX(),location.getY());
+        double mindist= Double.MAX_VALUE;
+        Waypoint rv=null;
+        GetSystemWaypoints200Response wr=systemsApi.getSystemWaypoints(system.getSymbol(),1,20);
+        CLASS_LOGGER.debug("GetSystemWaypoints200Response {}",wr);
+        java.util.List<Waypoint> waypoints=wr.getData();
+        Waypoint candidate=null;
+        for(Waypoint waypoint:waypoints)
+        {
+            if(waypoint.getSymbol().equals(location.getSymbol())==false)
+            {
+                if(waypoint.getType()==WaypointType.ASTEROID_FIELD)
+                    candidate=waypoint;
+                if(candidate!=null)
+                {
+                    java.awt.geom.Point2D cp=new Point2D.Double(candidate.getX(),candidate.getY());
+                    if(cp.distanceSq(home)<mindist)
+                    {
+                        rv=candidate;
+                        mindist=cp.distanceSq(home);
+                    }
+                }
+            }
+        }
+        return rv;
+    }
+    public boolean isMarketPlace(de.elbosso.spacetraders.client.model.Waypoint waypoint) throws ApiException
     {
         boolean rv=false;
         for(WaypointTrait trait:waypoint.getTraits())
@@ -104,7 +152,9 @@ public class ShipPanel extends javax.swing.JPanel
     private void manageActionState() throws ApiException
     {
         CLASS_LOGGER.debug("nav {}",ship.getNav());
+
         GetWaypoint200Response sr=systemsApi.getWaypoint(ship.getNav().getSystemSymbol(),ship.getNav().getWaypointSymbol());
+        GetSystem200Response system=systemsApi.getSystem(ship.getNav().getSystemSymbol());
 
         if(ship.getNav().getStatus()== ShipNavStatus.DOCKED)
         {
@@ -122,9 +172,9 @@ public class ShipPanel extends javax.swing.JPanel
             dockAction.setEnabled(true);
             refuelAction.setEnabled(false);
             extractAction.setEnabled(isAsteroidField(sr.getData()));
-            navigateAction.setEnabled(true);
-            travelToNearestMarketPlaceAction.setEnabled(false);
-            travelToNearestAsteroidFieldAction.setEnabled(false);
+            navigateAction.setEnabled(false);//for now! true);
+            travelToNearestMarketPlaceAction.setEnabled(getNearestMarketPlace(system.getData(),sr.getData())!=null);
+            travelToNearestAsteroidFieldAction.setEnabled(getNearestAsteroidField(system.getData(),sr.getData())!=null);
         }
     }
 
@@ -222,8 +272,16 @@ public class ShipPanel extends javax.swing.JPanel
             {
                 try
                 {
-
-                    update();
+                    GetWaypoint200Response sr=systemsApi.getWaypoint(ship.getNav().getSystemSymbol(),ship.getNav().getWaypointSymbol());
+                    GetSystem200Response system=systemsApi.getSystem(ship.getNav().getSystemSymbol());
+                    Waypoint target=getNearestMarketPlace(system.getData(),sr.getData());
+                    if(target!=null)
+                    {
+                        NavigateShipRequest navigateShipRequest=new NavigateShipRequest();
+                        navigateShipRequest.setWaypointSymbol(target.getSymbol());
+                        fleetApi.navigateShip(ship.getSymbol(),navigateShipRequest);
+                        update();
+                    }
                 }
                 catch(java.lang.Throwable t)
                 {
@@ -239,8 +297,16 @@ public class ShipPanel extends javax.swing.JPanel
             {
                 try
                 {
-
-                    update();
+                    GetWaypoint200Response sr=systemsApi.getWaypoint(ship.getNav().getSystemSymbol(),ship.getNav().getWaypointSymbol());
+                    GetSystem200Response system=systemsApi.getSystem(ship.getNav().getSystemSymbol());
+                    Waypoint target=getNearestAsteroidField(system.getData(),sr.getData());
+                    if(target!=null)
+                    {
+                        NavigateShipRequest navigateShipRequest=new NavigateShipRequest();
+                        navigateShipRequest.setWaypointSymbol(target.getSymbol());
+                        fleetApi.navigateShip(ship.getSymbol(),navigateShipRequest);
+                        update();
+                    }
                 }
                 catch(java.lang.Throwable t)
                 {
@@ -249,5 +315,20 @@ public class ShipPanel extends javax.swing.JPanel
             }
         };
         travelToNearestAsteroidFieldAction.setEnabled(false);
+        refreshAction=new javax.swing.AbstractAction("refresh")
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                try
+                {
+                    update();
+                }
+                catch(java.lang.Throwable t)
+                {
+                    de.elbosso.util.Utilities.handleException(EXCEPTION_LOGGER,ShipPanel.this,t);
+                }
+            }
+        };
     }
 }
