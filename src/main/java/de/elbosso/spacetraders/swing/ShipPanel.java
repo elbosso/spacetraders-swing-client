@@ -7,6 +7,7 @@ import de.elbosso.spacetraders.client.invoker.ApiException;
 import de.elbosso.spacetraders.client.model.*;
 import de.netsysit.util.beans.InterfaceFactory;
 import de.netsysit.util.beans.InterfaceFactoryException;
+import de.netsysit.util.lang.TimeSpan;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -250,9 +251,10 @@ public class ShipPanel extends javax.swing.JPanel
                 try
                 {
                     ExtractResourcesRequest extractResourcesRequest=new ExtractResourcesRequest();
-                    fleetApi.extractResources(ship.getSymbol(),extractResourcesRequest);
+                    ExtractResources201Response response=fleetApi.extractResources(ship.getSymbol(),extractResourcesRequest);
+                    java.time.Duration duration=java.time.Duration.ofSeconds(response.getData().getCooldown().getTotalSeconds());
+                    de.elbosso.ui.dialog.CountdownDialog.create(null,"Cooldown...",(java.lang.String)null).showDialog(new TimeSpan(duration));
                     update();
-                    
                 }
                 catch(java.lang.Throwable t)
                 {

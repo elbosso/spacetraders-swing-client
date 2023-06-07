@@ -3,6 +3,11 @@
 Changelog of this project.
 
 
+**refueling works and navigation is possible to arbitrary destinations within the system!**
+
+
+[cd2e46cbb445f8a](https://github.com/<user>/<project>/commit/cd2e46cbb445f8a) Juergen Key *2023-06-07 15:15:48*
+
 **now, we go mining!**
 
 
