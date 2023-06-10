@@ -287,7 +287,9 @@ public class ShipPanel extends javax.swing.JPanel
                     ExtractResources201Response response=fleetApi.extractResources(ship.getSymbol(),extractResourcesRequest);
                     java.time.Duration duration=java.time.Duration.ofSeconds(response.getData().getCooldown().getTotalSeconds());
                     update();
-                    de.elbosso.ui.dialog.CountdownDialog.create(null,"Cooldown...",ship.getCargo().toString()).showDialog(new TimeSpan(duration),ship.getCargo().getUnits()<ship.getCargo().getCapacity()?extractAction:null);
+                    CLASS_LOGGER.debug("cargo {} units {}",ship.getCargo().getUnits(),ship.getCargo().getCapacity());
+                    if(ship.getCargo().getUnits()<ship.getCargo().getCapacity())
+                        de.elbosso.ui.dialog.CountdownDialog.create(null,"Cooldown...",ship.getCargo().toString()).showDialog(new TimeSpan(duration),ship.getCargo().getUnits()<ship.getCargo().getCapacity()?extractUntilFullAction:null);
                 }
                 catch(java.lang.Throwable t)
                 {

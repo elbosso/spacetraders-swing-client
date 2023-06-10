@@ -3,13 +3,12 @@ package de.elbosso.spacetraders.swing;
 import de.elbosso.spacetraders.client.api.SystemsApi;
 import de.elbosso.spacetraders.client.invoker.ApiClient;
 import de.elbosso.spacetraders.client.invoker.ApiException;
-import de.elbosso.spacetraders.client.model.GetSystemWaypoints200Response;
-import de.elbosso.spacetraders.client.model.Waypoint;
-import de.elbosso.spacetraders.client.model.WaypointType;
+import de.elbosso.spacetraders.client.model.*;
 import de.netsysit.model.table.BeanListModel;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
@@ -39,6 +38,33 @@ public class WaypointTraitPanel extends javax.swing.JPanel implements javax.swin
         add(new javax.swing.JScrollPane(table));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getSelectionModel().addListSelectionListener(this);
+        table.setDefaultRenderer(java.util.List.class,new DefaultTableCellRenderer()
+        {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
+            {
+                java.awt.Component comp=super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if((comp!=null)&&(javax.swing.JLabel.class.isAssignableFrom(comp.getClass())))
+                {
+                    if(value!=null)
+                    {
+                        if(column==5)
+                        {
+                            java.lang.StringBuffer buf=new java.lang.StringBuffer();
+                            for(WaypointTrait waypointTrait:waypoints.get(row).getTraits())
+                            {
+                                if(buf.length()>0)
+                                    buf.append(", ");
+                                buf.append(waypointTrait.getSymbol());
+                            }
+                            ((javax.swing.JLabel)comp).setText(buf.toString());
+                        }
+                    }
+                }
+                return comp;
+            }
+        });
+
         createActions();
         JToolBar tb = new JToolBar();
         add(tb, BorderLayout.NORTH);
