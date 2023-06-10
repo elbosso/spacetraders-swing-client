@@ -64,7 +64,7 @@ class ContractsWindow extends javax.swing.JFrame implements javax.swing.event.Li
                 Contract contract = contracts.get(table.getSelectedRow());
                 try
                 {
-                    de.netsysit.ui.dialog.GeneralPurposeInfoDialog.showComponentInDialog(ContractsWindow.this, interfaceFactory.fetchInterfaceForBean(contract, contract.getId()));
+                    de.netsysit.ui.dialog.GeneralPurposeInfoDialog.showComponentInDialog(ContractsWindow.this, new ContractPanel(defaultClient,contract));
                     update();
                 } catch (Throwable t)
                 {

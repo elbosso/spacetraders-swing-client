@@ -64,7 +64,7 @@ class FleetWindow extends javax.swing.JFrame implements javax.swing.event.ListSe
         pack();
     }
 
-    private void update() throws ApiException, IntrospectionException
+    void update() throws ApiException, IntrospectionException
     {
         GetMyShips200Response shipsr = fleetApi.getMyShips(1, 20);
         ships = shipsr.getData();
@@ -82,7 +82,7 @@ class FleetWindow extends javax.swing.JFrame implements javax.swing.event.ListSe
                 Ship ship = ships.get(table.getSelectedRow());
                 try
                 {
-                    de.netsysit.ui.dialog.GeneralPurposeInfoDialog.showComponentInDialog(FleetWindow.this, new ShipPanel(defaultClient,ship));
+                    ShipRegistry.getSharedInstance(defaultClient).getWindow(ship.getSymbol()).setVisible(true);
                     update();
                 } catch (Throwable t)
                 {

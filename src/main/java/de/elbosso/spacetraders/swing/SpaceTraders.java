@@ -27,7 +27,7 @@ public class SpaceTraders extends javax.swing.JFrame
 {
     private static final org.slf4j.Logger CLASS_LOGGER=org.slf4j.LoggerFactory.getLogger(SpaceTraders.class);
     private static final org.slf4j.Logger EXCEPTION_LOGGER=org.slf4j.LoggerFactory.getLogger("ExceptionCatcher");
-    private ApiClient defaultClient = Configuration.getDefaultApiClient();
+    private static ApiClient defaultClient = Configuration.getDefaultApiClient();
     private AgentsApi agentsApi;
     private Agent agent;
     private javax.swing.JToolBar tb=new javax.swing.JToolBar();
@@ -36,9 +36,9 @@ public class SpaceTraders extends javax.swing.JFrame
     private javax.swing.Action fleetAction;
     private javax.swing.Action contractsAction;
     private javax.swing.JFrame homeWindow;
-    private javax.swing.JFrame fleetWindow;
     private javax.swing.JFrame contractsWindow;
     private de.netsysit.util.beans.InterfaceFactory interfaceFactory=new de.netsysit.util.beans.InterfaceFactory();
+    private static FleetWindow fleetWindow;
 
     SpaceTraders() throws ApiException, InterfaceFactoryException, IOException
     {
@@ -98,19 +98,8 @@ public class SpaceTraders extends javax.swing.JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                if(fleetWindow==null)
-                {
-                    try
-                    {
-                        fleetWindow = new FleetWindow("Fleet", defaultClient);
-                    }
-                    catch(java.lang.Throwable t)
-                    {
-                        de.elbosso.util.Utilities.handleException(null,t);
-                    }
-                }
-                if(fleetWindow!=null)
-                    fleetWindow.setVisible(true);
+                if(getFleetWindow()!=null)
+                    getFleetWindow().setVisible(true);
             }
         };
         contractsAction=new javax.swing.AbstractAction("contracts")
@@ -136,8 +125,25 @@ public class SpaceTraders extends javax.swing.JFrame
 
     }
 
+    public static FleetWindow getFleetWindow()
+    {
+        if(fleetWindow==null)
+        {
+            try
+            {
+                fleetWindow = new FleetWindow("Fleet", defaultClient);
+            }
+            catch(java.lang.Throwable t)
+            {
+                de.elbosso.util.Utilities.handleException(null,t);
+            }
+        }
+        return fleetWindow;
+    }
+
     public static void main(String[] args) throws InterfaceFactoryException, ApiException, IOException
     {
+
         try
         {
             java.util.Properties iconFallbacks = new java.util.Properties();

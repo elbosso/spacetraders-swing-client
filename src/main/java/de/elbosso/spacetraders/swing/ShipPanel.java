@@ -28,6 +28,7 @@ public class ShipPanel extends javax.swing.JPanel
     private javax.swing.Action dockAction;
     private javax.swing.Action refuelAction;
     private javax.swing.Action extractAction;
+    private javax.swing.Action extractUntilFullAction;
     private javax.swing.Action navigateAction;
     private javax.swing.Action travelToNearestMarketPlaceAction;
     private javax.swing.Action travelToNearestAsteroidFieldAction;
@@ -53,6 +54,7 @@ public class ShipPanel extends javax.swing.JPanel
         tb.add(refuelAction);
         tb.add(sellAction);
         tb.add(extractAction);
+        tb.add(extractUntilFullAction);
         tb.add(navigateAction);
         tb.add(travelToNearestMarketPlaceAction);
         tb.add(travelToNearestAsteroidFieldAction);
@@ -147,6 +149,14 @@ public class ShipPanel extends javax.swing.JPanel
         doLayout();
         repaint();
         manageActionState();
+        try
+        {
+            SpaceTraders.getFleetWindow().update();
+        }
+        catch(java.lang.Throwable t)
+        {
+            de.elbosso.util.Utilities.handleException(EXCEPTION_LOGGER,ShipPanel.this,t);
+        }
     }
     private void manageActionState() throws ApiException
     {
@@ -161,6 +171,7 @@ public class ShipPanel extends javax.swing.JPanel
             dockAction.setEnabled(false);
             refuelAction.setEnabled(isMarketPlace(sr.getData()));
             extractAction.setEnabled(isAsteroidField(sr.getData()));
+            extractUntilFullAction.setEnabled(isAsteroidField(sr.getData()));
             sellAction.setEnabled(isMarketPlace(sr.getData()));
             navigateAction.setEnabled(false);
             travelToNearestMarketPlaceAction.setEnabled(false);
@@ -172,6 +183,7 @@ public class ShipPanel extends javax.swing.JPanel
             dockAction.setEnabled(true);
             refuelAction.setEnabled(false);
             extractAction.setEnabled(isAsteroidField(sr.getData()));
+            extractUntilFullAction.setEnabled(isAsteroidField(sr.getData()));
             sellAction.setEnabled(false);
             navigateAction.setEnabled(true);
             travelToNearestMarketPlaceAction.setEnabled(getNearestMarketPlace(system.getData(),sr.getData())!=null);
@@ -183,6 +195,7 @@ public class ShipPanel extends javax.swing.JPanel
             dockAction.setEnabled(false);
             refuelAction.setEnabled(false);
             extractAction.setEnabled(false);
+            extractUntilFullAction.setEnabled(false);
             sellAction.setEnabled(false);
             navigateAction.setEnabled(true);
             travelToNearestMarketPlaceAction.setEnabled(getNearestMarketPlace(system.getData(),sr.getData())!=null);
@@ -253,8 +266,8 @@ public class ShipPanel extends javax.swing.JPanel
                     ExtractResourcesRequest extractResourcesRequest=new ExtractResourcesRequest();
                     ExtractResources201Response response=fleetApi.extractResources(ship.getSymbol(),extractResourcesRequest);
                     java.time.Duration duration=java.time.Duration.ofSeconds(response.getData().getCooldown().getTotalSeconds());
-                    de.elbosso.ui.dialog.CountdownDialog.create(null,"Cooldown...",(java.lang.String)null).showDialog(new TimeSpan(duration));
                     update();
+                    de.elbosso.ui.dialog.CountdownDialog.create(null,"Cooldown...",ship.getCargo().toString()).showDialog(new TimeSpan(duration));
                 }
                 catch(java.lang.Throwable t)
                 {
@@ -263,6 +276,26 @@ public class ShipPanel extends javax.swing.JPanel
             }
         };
         extractAction.setEnabled(false);
+        extractUntilFullAction = new javax.swing.AbstractAction("extract*")
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                try
+                {
+                    ExtractResourcesRequest extractResourcesRequest=new ExtractResourcesRequest();
+                    ExtractResources201Response response=fleetApi.extractResources(ship.getSymbol(),extractResourcesRequest);
+                    java.time.Duration duration=java.time.Duration.ofSeconds(response.getData().getCooldown().getTotalSeconds());
+                    update();
+                    de.elbosso.ui.dialog.CountdownDialog.create(null,"Cooldown...",ship.getCargo().toString()).showDialog(new TimeSpan(duration),ship.getCargo().getUnits()<ship.getCargo().getCapacity()?extractAction:null);
+                }
+                catch(java.lang.Throwable t)
+                {
+                    de.elbosso.util.Utilities.handleException(EXCEPTION_LOGGER,ShipPanel.this,t);
+                }
+            }
+        };
+        extractUntilFullAction.setEnabled(false);
         navigateAction = new javax.swing.AbstractAction("navigate")
         {
             @Override

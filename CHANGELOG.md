@@ -3,6 +3,13 @@
 Changelog of this project.
 
 
+**fixes #3**
+
+
+[f4c17c73b02961e](https://github.com/<user>/<project>/commit/f4c17c73b02961e) Juergen Key *2023-06-07 18:11:43*
+
+
+
 **refueling works and navigation is possible to arbitrary destinations within the system!**
 
 
