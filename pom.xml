@@ -52,7 +52,7 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <!--project.scm.id><scm-id in settings.xml></project.scm.id-->
-         <elbosso.artifacts.version>2.2.0-SNAPSHOT</elbosso.artifacts.version>
+         <elbosso.artifacts.version>2.3.0-SNAPSHOT</elbosso.artifacts.version>
     </properties>
   <build>
         <pluginManagement>
